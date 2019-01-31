@@ -16,12 +16,13 @@ public class ProtocolInstance implements Protocol{
     public byte[] doOperation(RemoteAddress ref, int operationId, int value1, int value2) throws IOException {
         MessageRequest message = new MessageRequest(ref, operationId, value1,value2);
         byte[] messageBytes = MessageUtil.toByteArray(message);
-        //
+        // sending packet to realize operation
         DatagramPacket request = new DatagramPacket(messageBytes,
                 messageBytes.length,InetAddress.getByAddress(ref.host.getBytes()),ref.port);
         socket.send(request);
+        //
 
-        // handle reply from remote address
+        // handle reply from remote address that solve the operation
         byte[] bufferReply = new byte[1];
         DatagramPacket reply = new DatagramPacket(bufferReply, bufferReply.length);
         socket.receive(reply);
