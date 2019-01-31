@@ -3,24 +3,25 @@ import java.net.*;
 
 public class ProtocolInstance implements Protocol{
     private DatagramSocket socket;
+    private final static int PORT_DEFAULT = 2555;
 
-    public ProtocolInstance(RemoteRef ref) throws IOException {
+    public ProtocolInstance() throws SocketException {
+        this.socket = new DatagramSocket(PORT_DEFAULT);
     }
 
-    public byte[] doOperation(RemoteRef ref, int operationId, byte[] arguments) throws IOException {
-        MessageRequest message = new MessageRequest(ref, operationId, arguments);
-        //SERIALIZE MESSAGE
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutput out = new ObjectOutputStream(bos);
-        out.writeObject(message);
-        out.flush();
-        byte[] requestBytes = bos.toByteArray();
+    public ProtocolInstance(int port) throws SocketException {
+        this.socket = new DatagramSocket(port);
+    }
+
+    public byte[] doOperation(RemoteAddress ref, int operationId, int value1, int value2) throws IOException {
+        MessageRequest message = new MessageRequest(ref, operationId, value1,value2);
+        byte[] messageBytes = MessageUtil.toByteArray(message);
         //
-        DatagramPacket request = new DatagramPacket(requestBytes,
-                requestBytes.length,InetAddress.getByAddress(ref.host.getBytes()),ref.port);
+        DatagramPacket request = new DatagramPacket(messageBytes,
+                messageBytes.length,InetAddress.getByAddress(ref.host.getBytes()),ref.port);
         socket.send(request);
 
-        // HANDLE REPLY
+        // handle reply from remote address
         byte[] bufferReply = new byte[1];
         DatagramPacket reply = new DatagramPacket(bufferReply, bufferReply.length);
         socket.receive(reply);
@@ -34,8 +35,9 @@ public class ProtocolInstance implements Protocol{
     }
 
     public byte[] getRequest() throws IOException {
-        byte[] bufferReply = new byte[1];
-        DatagramPacket reply = new DatagramPacket(bufferReply, bufferReply.length);
-        socket.receive(reply);
+        byte[] buff = new byte[179];
+        DatagramPacket request = new DatagramPacket(buff, buff.length);
+        socket.receive(request);
+        return request.getData();
     }
 }

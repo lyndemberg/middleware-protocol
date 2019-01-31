@@ -1,15 +1,16 @@
 import java.io.Serializable;
-import java.util.Arrays;
 
 public class MessageRequest implements Serializable {
-    public RemoteRef ref;
-    int operationId;
-    byte[] arguments;
+    public RemoteAddress ref;
+    public int operationId;
+    public int value1;
+    public int value2;
 
-    public MessageRequest(RemoteRef ref, int operationId, byte[] arguments) {
+    public MessageRequest(RemoteAddress ref, int operationId, int value1, int value2) {
         this.ref = ref;
         this.operationId = operationId;
-        this.arguments = arguments;
+        this.value1 = value1;
+        this.value2 = value2;
     }
 
     @Override
@@ -17,7 +18,8 @@ public class MessageRequest implements Serializable {
         return "MessageRequest{" +
                 "ref=" + ref +
                 ", operationId=" + operationId +
-                ", arguments=" + Arrays.toString(arguments) +
+                ", value1=" + value1 +
+                ", value2=" + value2 +
                 '}';
     }
 }
