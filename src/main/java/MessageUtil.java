@@ -2,10 +2,18 @@ import java.io.*;
 
 public class MessageUtil {
 
-    public static byte[] toByteArray(Object object) throws IOException {
+    public static byte[] requestToByteArray(MessageRequest request) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutput out = new ObjectOutputStream(bos);
-        out.writeObject(object);
+        out.writeObject(request);
+        out.flush();
+        return bos.toByteArray();
+    }
+
+    public static byte[] replyToByteArray(MessageReply reply) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutput out = new ObjectOutputStream(bos);
+        out.writeObject(reply);
         out.flush();
         return bos.toByteArray();
     }
@@ -14,6 +22,8 @@ public class MessageUtil {
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         ObjectInputStream out = new ObjectInputStream(in);
         MessageRequest request = (MessageRequest) out.readObject();
+        in.close();
+        out.close();
         return request;
     }
 

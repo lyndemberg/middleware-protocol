@@ -1,12 +1,15 @@
 import java.io.Serializable;
 
 public class MessageReply implements Serializable {
-    private String message;
-    private int result;
+    public String message;
+    public int result;
 
     public MessageReply(String message, int result) {
         this.message = message;
         this.result = result;
+    }
+
+    public MessageReply() {
     }
 
     @Override

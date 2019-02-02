@@ -1,25 +1,50 @@
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class MessageRequest implements Serializable {
-    public RemoteAddress ref;
+    public RemoteAddress sourceReference;
     public int operationId;
-    public int value1;
-    public int value2;
+    public byte[] arguments;
 
-    public MessageRequest(RemoteAddress ref, int operationId, int value1, int value2) {
-        this.ref = ref;
+    public MessageRequest(){}
+
+
+    public MessageRequest(RemoteAddress sourceReference, int operationId, byte[] arguments) {
+        this.sourceReference = sourceReference;
         this.operationId = operationId;
-        this.value1 = value1;
-        this.value2 = value2;
+        this.arguments = arguments;
+    }
+
+    public RemoteAddress getSourceReference() {
+        return sourceReference;
+    }
+
+    public void setSourceReference(RemoteAddress sourceReference) {
+        this.sourceReference = sourceReference;
+    }
+
+    public int getOperationId() {
+        return operationId;
+    }
+
+    public void setOperationId(int operationId) {
+        this.operationId = operationId;
+    }
+
+    public byte[] getArguments() {
+        return arguments;
+    }
+
+    public void setArguments(byte[] arguments) {
+        this.arguments = arguments;
     }
 
     @Override
     public String toString() {
         return "MessageRequest{" +
-                "ref=" + ref +
+                "sourceReference=" + sourceReference +
                 ", operationId=" + operationId +
-                ", value1=" + value1 +
-                ", value2=" + value2 +
+                ", arguments=" + Arrays.toString(arguments) +
                 '}';
     }
 }
