@@ -8,28 +8,43 @@ public class Server implements ProtocolServer {
     private int SIZE_SLICE = 104;
     private int PORT = 2555;
 
-    public Server() throws SocketException {
+    public Server() throws SocketException, UnknownHostException {
         this.socket = new DatagramSocket(PORT);
     }
 
-    public Server(int port) throws SocketException {
+    public Server(int port) throws SocketException, UnknownHostException {
         this.PORT = port;
-        this.socket = new DatagramSocket(port);
+        this.socket = new DatagramSocket(PORT);
     }
 
     public void sendReply(byte[] reply, InetAddress clientHost, int clientPort) throws IOException {
-        byte[] header = ByteBuffer.allocate(4).putInt(reply.length).array();
-        byte[] arrayJoin = new byte[header.length + reply.length];
-        System.arraycopy(header,0,arrayJoin,0,header.length);
-        System.arraycopy(reply,0,arrayJoin,header.length,reply.length);
+        RemoteAddress sourceReference = new RemoteAddress(socket.getLocalAddress().getHostAddress(),PORT);
 
-        int countSlices = Math.round(arrayJoin.length / SIZE_SLICE);
-        int countSends = 0;
-        while(countSends != countSlices){
-            DatagramPacket replyPacket = new DatagramPacket(arrayJoin, countSends * SIZE_SLICE,
-                    SIZE_SLICE, clientHost, clientPort);
-            socket.send(replyPacket);
-            countSends++;
+        // preparing byte array final
+        final int messageSlices = Math.incrementExact((int) Math.ceil(reply.length / (SIZE_SLICE-8)));
+        final int TAMANHO_GERAL = reply.length+(messageSlices*8);
+        final int QUANTIDADE_FATIAS_GERAL = Math.incrementExact((int) Math.ceil(TAMANHO_GERAL / SIZE_SLICE));
+        byte[] slice = null;
+        int offset = 0;
+        int pos = 0;
+        byte[] length = ByteBuffer.allocate(4).putInt(TAMANHO_GERAL).array();
+        for(int i=0;i<QUANTIDADE_FATIAS_GERAL;i++){
+            slice = new byte[SIZE_SLICE];
+            byte[] sequence = ByteBuffer.allocate(4).putInt(i).array();
+            System.arraycopy(sequence,0,slice,0,4);
+            System.arraycopy(length,0,slice,4,4);
+
+            if((i+1) == QUANTIDADE_FATIAS_GERAL){
+                int rest = reply.length - offset;
+                System.arraycopy(reply, offset, slice,(sequence.length+length.length),rest);
+            }else{
+                System.arraycopy(reply, offset, slice,(sequence.length+length.length),SIZE_SLICE-8);
+            }
+            offset = offset + (SIZE_SLICE-8);
+
+            DatagramPacket packet = new DatagramPacket(slice, 0, SIZE_SLICE, clientHost, clientPort);
+
+            socket.send(packet);
         }
     }
 
@@ -40,37 +55,13 @@ public class Server implements ProtocolServer {
         do{
             byte[] slice = new byte[SIZE_SLICE];
             DatagramPacket packet = new DatagramPacket(slice, slice.length);
-            System.out.println("antes do receive");
             socket.receive(packet);
-            System.out.println("recebeu");
             int sequence = ByteBuffer.wrap(packet.getData(), 0, 4).getInt();
-            System.out.println("sequence->"+sequence);
             int length = ByteBuffer.wrap(packet.getData(), 4,4).getInt();
-            System.out.println("length->"+length);
             forReceive = Math.incrementExact((int) Math.ceil(length / SIZE_SLICE));
-//            forReceive = (int) Math.ceil(length / (SIZE_SLICE));
-            System.out.println("forReceive->"+forReceive);
             slices.put(sequence,slice);
-            System.out.println("inseriu");
             receivers++;
         }while(receivers != forReceive);
-        System.out.println("saiu do while");
-        return getRequestOrdered(slices);
-    }
-
-    private byte[] getRequestOrdered(HashMap<Integer,byte[]> slices) throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Map<Integer, byte[]> mapOrdered = new TreeMap<Integer, byte[]>(slices);
-        Iterator<Map.Entry<Integer, byte[]>> iterator = mapOrdered.entrySet().iterator();
-        int pos = 0;
-        while(iterator.hasNext()){
-            System.out.println("pos:"+pos);
-            byte[] value = iterator.next().getValue();
-            outputStream.write(value,8,value.length-8);
-        }
-        byte[] retorno = outputStream.toByteArray();
-        System.out.println("saindo");
-        System.out.println("length final:"+retorno.length);
-        return retorno;
+        return MessageUtil.getSlicesOrdered(slices);
     }
 }
