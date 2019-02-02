@@ -23,7 +23,7 @@ public class Client implements ProtocolClient {
         MessageRequest message = new MessageRequest(source, operationId, arguments);
 
         // preparing byte array final
-        byte[] messageBytes = MessageUtil.requestToByteArray(message);
+        byte[] messageBytes = MessageUtil.toByteArray(message);
         final int messageSlices = Math.incrementExact((int) Math.ceil(messageBytes.length / (SIZE_SLICE-8)));
         final int TAMANHO_GERAL = messageBytes.length+(messageSlices*8);
         final int QUANTIDADE_FATIAS_GERAL = Math.incrementExact((int) Math.ceil(TAMANHO_GERAL / SIZE_SLICE));
