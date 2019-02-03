@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Client implements ProtocolClient {
     private int SIZE_SLICE = 104;
@@ -49,7 +48,6 @@ public class Client implements ProtocolClient {
 
             socket.send(packet);
         }
-
 
         HashMap<Integer, byte[]> slices = new HashMap<Integer, byte[]>();
         int forReceive = 0;

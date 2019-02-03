@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.net.InetAddress;
 import java.nio.ByteBuffer;
 
 public class LoaderClient {

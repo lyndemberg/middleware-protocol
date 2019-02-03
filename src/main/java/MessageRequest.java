@@ -8,7 +8,6 @@ public class MessageRequest implements Serializable {
 
     public MessageRequest(){}
 
-
     public MessageRequest(RemoteAddress sourceReference, int operationId, byte[] arguments) {
         this.sourceReference = sourceReference;
         this.operationId = operationId;
